@@ -1,0 +1,49 @@
+\documentclass[12pt]{report}
+
+\usepackage[margin=1.0in]{geometry} % margins
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amsthm} % theorem formatting; proof environments
+\usepackage{MnSymbol} % \blacksquare
+\usepackage{tikz-cd} % commutative diagrams
+\usepackage[framemethod=TikZ]{mdframed}
+
+
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\argmin}{arg\,min}
+
+\newcommand*{\vertbar}{\rule[-1ex]{0.5pt}{2.5ex}}
+\newcommand*{\horzbar}{\rule[.5ex]{2.5ex}{0.5pt}}
+
+
+
+  
+  
+%\newtheorem{env_name}{Word_to_Print}[hier]
+\newtheorem{mythm}{Theorem}[chapter] % restart counter at each chapter
+\newtheorem{prop}[mythm]{Prop}% use same counter as theorem env
+\newtheorem{corollary}{Corollary}[mythm] % restart counter when theorem is used
+\newtheorem{lemma}[mythm]{Lemma}
+% \begin{theorem}[Pythagorean Theorem] uses text
+\renewcommand\qedsymbol{$\blacksquare$}
+
+\newenvironment{problem}[2][Problem]{\begin{trivlist}
+\item[\hskip \labelsep {\bfseries #1}\hskip \labelsep {\bfseries #2.}]}{\end{trivlist}}
+\newenvironment{exercise}[2][Exercise]{\begin{trivlist}
+\item[\hskip \labelsep {\bfseries #1}\hskip \labelsep {\bfseries #2.}]}{\end{trivlist}}
+
+\newenvironment{theorem}%
+  {\begin{mdframed}[backgroundcolor=black!10,
+  	linewidth=0pt,]\begin{mythm}}%
+  {\end{mythm}\end{mdframed}}
+
+\surroundwithmdframed[linewidth=3pt,
+   topline=false,
+   rightline=false,
+   bottomline=false,
+   leftmargin=\parindent,
+   skipabove=\medskipamount,
+   skipbelow=\medskipamount,
+]{proof}
+
+
