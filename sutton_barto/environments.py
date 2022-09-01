@@ -21,7 +21,7 @@ class Environment(ABC):
         """
         self.num_actions = k # number of arms
         self.reward_means = self._generate_reward_means(seed, baseline) # means for each arm
-        self.opt_action = int(np.max(self.reward_means)) # optimal action
+        self.opt_action = int(np.argmax(self.reward_means)) # optimal action
 
     def __call__(self, action: int) -> float:
         """Take an action and output a reward.
