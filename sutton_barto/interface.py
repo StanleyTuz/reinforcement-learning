@@ -74,3 +74,8 @@ if __name__ == "__main__":
 
 
 
+def cumavg(x: np.ndarray):
+    """Take the cumulative average of a vector of numbers."""
+    if x.ndim != 1:
+        raise ValueError('Input array must be a vector.')
+    return np.cumsum(x) / np.arange(1, len(x)+1, 1)
