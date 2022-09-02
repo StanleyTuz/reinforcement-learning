@@ -21,7 +21,10 @@ class Environment(ABC):
         """
         self.num_actions = k # number of arms
         self.reward_means = self._generate_reward_means(seed, baseline) # means for each arm
-        self.opt_action = int(np.argmax(self.reward_means)) # optimal action
+
+    @property
+    def opt_action(self):
+        return int(np.argmax(self.reward_means))
 
     def __call__(self, action: int) -> float:
         """Take an action and output a reward.
@@ -111,6 +114,12 @@ class KArmedBandit(Environment):
         ax.set_ylabel(ylabel='Reward\ndistribution', rotation=0) #, labelpad=35)
         ax.yaxis.set_label_coords(-0.15, 0.45)
 
+
+    def evolve(self, stddev: float = 0.01):
+        """Perturb the reward distributions for the k arms. This makes the bandit environment
+        non-stationary. Adds zero-mean noise with std dev 0.01 to each action reward mean.
+        """
+        self.reward_means += scipy.stats.norm(loc=0, scale=stddev).rvs(self.num_actions)
 
 
 if __name__ == "__main__":
