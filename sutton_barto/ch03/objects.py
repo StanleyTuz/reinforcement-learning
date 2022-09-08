@@ -1,5 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import sympy
+
 
 def get_dynamics() -> np.ndarray:
     """
@@ -81,8 +83,9 @@ def plot_v(v: np.ndarray, ax = None):
 
     for s in range(len(v)):
         x_t, y_t = state_to_txt_coord(s)
-        ax.text(x=x_t, y=y_t, s=f"{v[s][0]:.1f}")
-    plt.show()
+        ax.text(x=x_t, y=y_t, s=f"{v[s]:.1f}")
+    ax.set_aspect('equal')
+    # plt.show()
 
 
 def plot_policy(policy: np.ndarray, ax = None):
@@ -121,7 +124,7 @@ def plot_policy(policy: np.ndarray, ax = None):
                     ec='k',
                     )
     ax.set_aspect('equal')
-    plt.show()
+    # plt.show()
 
 
 
@@ -180,7 +183,7 @@ def calc_sv_exact(
     A = np.eye(25) - gamma * S
 
     v = np.linalg.inv(A) @ b
-    return v
+    return v.flatten()
 
 
 def calc_q_from_v(v: np.ndarray, dynamics: np.ndarray, gamma: float = 0.5) -> np.ndarray:
@@ -203,7 +206,6 @@ def calc_q_from_v(v: np.ndarray, dynamics: np.ndarray, gamma: float = 0.5) -> np
 
 
 def argmax_q(q):
-
     policy_new = np.zeros((25, 4))
 
     for i in range(q.shape[0]):
@@ -215,6 +217,19 @@ def argmax_q(q):
     return policy_new
 
 
+def policy_improvement(policy: np.ndarray, dynamics: np.ndarray, gamma: float):
+    
+    # get state-value function for this policy
+    v = calc_sv_exact(policy, dynamics, gamma)
+
+    # get action-value function for this policy
+    q = calc_q_from_v(v, dynamics, gamma)
+
+    # get improved policy by acting greedily
+    policy_new = argmax_q(q)
+
+    return policy_new
+
 
 def calc_sv_optimal_exact(
     dynamics: np.ndarray,
@@ -222,7 +237,8 @@ def calc_sv_optimal_exact(
 ):
     """Calculate the exact *optimal* state-value function
     in an environment by solving the Bellman optimality
-    equation as a linear system.
+    equation as a non-linear system. sympy is used for the
+    actual nonlinear solving.
     
     This is feasible only for small, discrete problems (tabular case)
     in which the dynamics are exactly known.
@@ -239,35 +255,30 @@ def calc_sv_optimal_exact(
             means we care less about future rewards; gamma = 0 is immediate
             short-term rewards.
     """
+    from sympy.functions.elementary.miscellaneous import Max
 
-    S = np.zeros((25, 25))
-    b = np.zeros((25, 1))
+    gamma = sympy.S(gamma)
 
     states = list(range(25))
     actions = list(range(4))
-    rewards = {0: -1.0, 1: 0.0, 2: 5.0, 3: 10.0}
 
-    # constant terms
+    rewards = { i: sympy.S(x) for i,x in enumerate([-1.0, 0.0, 5.0, 10.0])}
+    sym = [sympy.Symbol(f"v({s})", real=True) for s in states]
+
+    eqn_list = []
     for s in states:
-        actions = policy[s] # (a, p)
-        for a, p_a_s in enumerate(actions):
-            results = dynamics[s, a] # (sp, r, p)
+        terms = []
+        for a in actions:
+            sum_ = sympy.S(0)  # init to zero
             for sp in states:
-                for r_idx in rewards.keys():
-                    b[s] += rewards[r_idx] * results[sp, r_idx] * p_a_s
+                for ri, r in rewards.items():
+                    sum_ += sympy.S(dynamics[s, a, sp, ri]) * (r + gamma * sym[sp])
+            terms.append(sum_)
 
-    # linear terms
-    for s in states:
-        actions = policy[s] # (a, p)
-        for a, p_a_s in enumerate(actions):
-            results = dynamics[s,a] # (sp, r, p)
-            for sp in states:
-                for r_idx in rewards.keys():
-                    S[s, sp] += p_a_s * results[sp, r_idx]
+        eqn = sym[s] - Max(*terms)
+        eqn_list.append(eqn)
 
-    A = np.eye(25) - gamma * S
-
-    v = np.linalg.inv(A) @ b
-    return v
+    soln = sympy.nsolve(eqn_list, sym, [1]*25)
+    return np.array(soln).flatten()
 
 
