@@ -1,0 +1,111 @@
+%\documentclass[12pt]{report}
+
+\input{./header}
+
+
+\newcommand*{\bit}{\begin{itemize}}
+\newcommand*{\eit}{\end{itemize}}
+
+
+\title{Sutton \& Barto Reinforcement Learning Notes}
+\author{Stan Tuznik}
+  
+\begin{document}
+
+\maketitle
+\tableofcontents
+
+
+\chapter{Introduction}
+
+\chapter{Multi-armed Bandits}
+
+\bit
+	\item Reinforcement learning evaluates states and actions, it doesn't just tell what action to take.
+	\bit
+		\item Evolutionary methods, by contrast, take a policy, evaluate it as a whole, and modify it. It does this holistically, not by inspecting and evaluating individual actions!
+		\item Evaluating actions requires \emph{taking} them; this requires exploration.
+	\eit
+	\item \textbf{Bandit problems} use only a single state in which one of $k$ actions may be taken. The goal is to evaluate each action.
+\eit
+
+\section{A $k$-armed Bandit Problem}
+\bit
+	\item \textbf{Bandit problem}: we have $k$ possible actions, and we can take one action in each of $N$ time steps. Taking actions results in an immediate reward. \textbf{Goal} is to learn how to behave in order to maximize the total reward over all time steps.
+	\item When an action $A_t$ is taken, a reward $R_t$ is obtained. In general, this reward will be a random variable, and so comes from some unknown distribution, which we assume is \textit{stationary} over time.
+	\bit	
+		\item We can consider the expected reward of taking action $A_t = a$: 
+		\begin{equation}
+		q_*\left(a\right) := \mathbb{E}\left[R_t \, \middle| \, A_t = a\right]
+		\end{equation}
+		We call this the \textbf{value of taking action $a$ at time $t$}.
+		\item The function $q_*: \mathcal{A} \rightarrow \mathbb{R}$ so defined is the \textbf{action-value function}.
+	\eit
+	\item If we knew this action-value function, we could ``beat probability'' by always choosing the action with the highest expected reward, i.e., the highest action-value.
+	\item Unfortunately, we don't actually know what the distribution of rewards looks like, so we can't exactly compute this action-value function.
+	\bit
+		\item Instead, we approximate it with a function $Q_t$ such that $Q_t\left(a\right)$ is our estimated value of action $a$ at time step $t$.
+		\bit
+			\item Does this mean the estimated value of taking action $a$ at time $t$, or the estimated value at time $t$ of taking action $a$? It seems from the notation ``$q_*$'' not indicating $t$ that it must be the latter.
+			\item We want $Q_t\left(a\right) \approx q_*\left(a\right)$, so this seems to support my conclusion.
+			\item We also assumed that the distributions are stationary and so the value of any particular action should not depend on when we take it.
+		\eit
+	\eit
+	\item A \textbf{greedy action} is one with the maximum expected total reward; an action is \textbf{exploratory} if it is not greedy.
+	\item Strategizing about whether to act greedily depends on uncertainties, estimates, and the finite time horizon (if we don't have much time left, it's probably not worth exploring).
+	
+\eit 
+
+
+\section{Action-value Methods}
+
+\bit
+	\item \textbf{Action-value methods} estimate the value of actions and use those estimates to make action selection decisions.
+	\bit
+		\item The \emph{true value} of an action is the expected (mean) reward when that action is taken. We can't possibly know this, though!
+	\eit
+	\item One simple approach is the \textbf{sample-average} method, where take a large number ($t-1$) of actions, observe the reward obtained each time, and compute the empirical average reward observed after taking action $a$: 
+	\begin{equation}
+		Q_t\left(a\right) := \frac{\sum_{i=1}^{t-1} R_i \cdot \mathbb{I}_{A_i=a}}{\sum_{i=1}^{t-1}\mathbb{I}_{A_i=a}}	
+	\end{equation}
+	\bit
+		\item This actually converges to $q_*$ in the limit as $t \rightarrow \infty$.
+	\eit
+	\item How can we use these estimates to select actions?
+	\bit
+		\item The greedy action is the action (or set thereof) which maximizes the expected reward: 
+		\begin{equation}
+			A_t = \argmax_a Q_t\left(a\right)		
+		\end{equation} 
+		\item ``Greediness always exploits current knowledge to maximize immediate reward.''
+		\item Performing greedily is entirely exploitation and no exploitation!
+	\eit
+	\item \textbf{$\epsilon$-greedy methods} incorporate exploration by setting a parameter $\epsilon \in \left(0,1\right)$ --- generally to a small value --- and taking an exploratory action $\epsilon \times 100 \%$ of the time.
+	\bit
+		\item This method theoretically guarantees that all actions will be sampled an infinite number of times, so that $Q_t\left(a\right) \rightarrow q_*\left(a\right)$.
+	\eit
+	
+\eit
+
+
+
+\section{The 10-armed Testbed}
+
+\bit
+	\item The authors build a simple bandit test problem. There are $k=10$ actions to take, and for each action, the rewards are normally distributed. 
+	\bit
+		\item Thus, taking an action multiple times can give different rewards, but the rewards all come from the same distribution.
+		\item The authors use a simple normal distribution for the reward distribution for each action.
+		\begin{equation}
+			r \sim \text{Pr}\left(r\,;\, A=a\right) = \mathcal{N}\left(q_*\left(a\right), 1\right)
+		\end{equation}
+		where the action-values $q_*\left(a\right)$ are generated from a standard normal distribution:
+		\begin{equation}
+			q_*\left(a\right) \sim \mathcal{N}\left(0,1\right)
+		\end{equation}
+		\item This is fairly easy to implement, and gives us a ``black box'' environment for experimenting with different bandit algorithms, such as the aforementioned $\epsilon$-greedy method with different values of $\epsilon$.
+	\eit
+\eit
+
+
+\end{document}
