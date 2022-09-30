@@ -1,3 +1,9 @@
 .vscode/
+<<<<<<< HEAD
 rlenv/
 .DS_store
+=======
+.venv/
+rlenv/
+*__pycache__/
+>>>>>>> master
