@@ -88,44 +88,6 @@ def plot_v(v: np.ndarray, ax = None):
     # plt.show()
 
 
-def plot_policy(policy: np.ndarray, ax = None):
-    if ax is None:
-        _, ax = plt.subplots()
-
-    ax.set(xlim=[-0.5,4.5], ylim=[-0.5,4.5])
-    ax.set_xticks(np.arange(-0.5, 4.5, 1))
-    ax.set_yticks(np.arange(-0.5, 4.5, 1))
-    ax.xaxis.set_ticklabels([])
-    ax.yaxis.set_ticklabels([])
-    ax.grid()
-
-    def state_to_txt_coord(s: int):
-        y_coord = 5 - ( s // 5) - 1
-        x_coord = s % 5
-        return x_coord, y_coord
-
-    arrows = {0: [0,1], 1: [0, -1], 2: [-1, 0], 3: [1, 0]}
-    scale = 0.40
-    eps = 1e-5
-    for s in range(policy.shape[0]):
-        p_s = policy[s]
-        x_t, y_t = state_to_txt_coord(s)
-        for idx, arr in arrows.items():
-            arrow = scale * np.array(arr) * p_s[idx]
-            if any(abs(arrow) > eps):
-                ax.arrow(
-                    x_t,
-                    y_t,
-                    arrow[0],
-                    arrow[1],
-                    head_width=0.05,
-                    head_length=0.1,
-                    fc='k',
-                    ec='k',
-                    )
-    ax.set_aspect('equal')
-    # plt.show()
-
 
 
 def calc_sv_exact(
